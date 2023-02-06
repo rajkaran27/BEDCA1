@@ -4,9 +4,201 @@
 var db = require('./databaseConfig.js')
 
 var userDB = {
+    verify: function (username, password, callback) {
+
+        var dbConn = db.getConnection();
+        dbConn.connect(function (err) {
+
+            if (err) {//database connection gt issue!
+
+                console.log(err);
+                return callback(err, null);
+            } else {
+
+                const query = "SELECT * FROM staff WHERE email = ? and password = ?";
+
+                dbConn.query(query, [username, password], (error, results) => {
+                    if (error) {
+                        callback(error, null);
+                        return;
+                    }
+                    if (results.length === 0) {
+                        return callback(null, null);
+
+                    } else {
+                        const user = results[0];
+                        return callback(null, user);
+                    }
+                });
+            }
+        });
+    },
+
+    getMovieById: function (film_id, callback) {
+        var conn = db.getConnection()
+        conn.connect(function (err) {
+            if (err) {
+                console.log(err)
+                return callback(err, null)
+            } else {
+                var sql = "SELECT film.film_id, film.title,film.description, category.name AS category, film.rating, film.release_year FROM film JOIN film_category ON film_category.film_id=film.film_id JOIN category ON category.category_id=film_category.category_id WHERE film.film_id = ?;"
+                conn.query(sql, [film_id], function (err, result) {
+                    conn.end()
+                    if (err) {
+                        console.log(err)
+                        return callback(err, null)
+                    } else {
+                        console.log(result)
+                        return callback(null, result)
+                    }
+                })
+            }
+        })
+    },
+
+    searchByTitle: function (title, price, callback) {
+        var conn = db.getConnection()
+        conn.connect(function (err) {
+            if (err) {
+                console.log(err)
+                return callback(err, null)
+            } else {
+                var sql = "SELECT film.film_id, film.title,film.description, category.name AS category, film.rating, film.release_year FROM film JOIN film_category ON film_category.film_id=film.film_id JOIN category ON category.category_id=film_category.category_id WHERE film.title LIKE UPPER(?) AND film.rental_rate <=?;"
+                conn.query(sql, [("%" + title + "%"), price], function (err, result) {
+                    conn.end()
+                    if (err) {
+
+                        console.log(err)
+                        return callback(err, null)
+                    } else {
+                        return callback(null, result)
+                    }
+                })
+            }
+        })
+    },
+
+
+    searchActors: function (film_id, callback) {
+        var conn = db.getConnection()
+        conn.connect(function (err) {
+            if (err) {
+                console.log(err)
+                return callback(err, null)
+            } else {
+
+                var sql = "SELECT film_actor.actor_id ,actor.first_name, actor.last_name FROM film JOIN film_actor ON film.film_id=film_actor.film_id JOIN actor ON film_actor.actor_id=actor.actor_id WHERE film.film_id = ?"
+
+                conn.query(sql, [film_id], function (err, result) {
+                    conn.end()
+                    if (err) {
+
+                        console.log(err)
+                        return callback(err, null)
+                    } else {
+
+                        return callback(null, result)
+                    }
+                })
+            }
+        })
+
+
+
+
+    },
+
+
+    // populate search bar
+    getCategories: function (callback) {
+        var conn = db.getConnection()
+        conn.connect(function (err) {
+            if (err) {
+                console.log(err)
+                return callback(err, null)
+            } else {
+                var sql = 'SELECT name, category_id FROM category'
+                conn.query(sql, function (err, result) {
+                    conn.end()
+                    if (err) {
+                        console.log(err)
+                        return callback(err, null)
+                    } else {
+
+                        return callback(null, result)
+                    }
+                })
+            }
+        })
+    },
+
+    getCities: function (callback) {
+        var conn = db.getConnection()
+        conn.connect(function (err) {
+            if (err) {
+                console.log(err)
+                return callback(err, null)
+            } else {
+                var sql = 'SELECT city_id, city FROM city'
+                conn.query(sql, function (err, result) {
+                    conn.end()
+                    if (err) {
+                        console.log(err)
+                        return callback(err, null)
+                    } else {
+
+                        return callback(null, result)
+                    }
+                })
+            }
+        })
+    },
+
+    getStores: function (callback) {
+        var conn = db.getConnection()
+        conn.connect(function (err) {
+            if (err) {
+                console.log(err)
+                return callback(err, null)
+            } else {
+                var sql = 'SELECT store.store_id, address.address FROM store JOIN address ON store.address_id=address.address_id;'
+                conn.query(sql, function (err, result) {
+                    conn.end()
+                    if (err) {
+                        console.log(err)
+                        return callback(err, null)
+                    } else {
+
+                        return callback(null, result)
+                    }
+                })
+            }
+        })
+    },
+
+    getActorSelect: function (callback) {
+        var conn = db.getConnection()
+        conn.connect(function (err) {
+            if (err) {
+                console.log(err)
+                return callback(err, null)
+            } else {
+                var sql = 'SELECT actor_id, first_name, last_name FROM actor;'
+                conn.query(sql, function (err, result) {
+                    conn.end()
+                    if (err) {
+                        console.log(err)
+                        return callback(err, null)
+                    } else {
+
+                        return callback(null, result)
+                    }
+                })
+            }
+        })
+    },
 
     //Endpoint1
-    
     getActor: function (actor_id, callback) {
         var conn = db.getConnection()
         conn.connect(function (err) {
@@ -23,14 +215,13 @@ var userDB = {
                         return callback(err, null)
                     } else {
                         // return details of selected actor
-                        return callback(null, result)
+                        return callback(null, result[0])
                     }
                 })
             }
         })
     },
     //Endpoint 2
-   
     getActors: function (limit, offset, callback) {
         var conn = db.getConnection()
         conn.connect(function (err) {
@@ -54,7 +245,6 @@ var userDB = {
     },
 
     //Endpoint3
-    
     newActor: function (first_name, last_name, callback) {
         var conn = db.getConnection()
         conn.connect(function (err) {
@@ -70,7 +260,7 @@ var userDB = {
                         console.log(err)
                         return callback(err, null)
                     } else {
-                        console.log(result.insertId)
+                        console.log(result)
                         return callback(null, result)
                     }
                 })
@@ -79,8 +269,8 @@ var userDB = {
     },
 
     //Endpoint 4
-   
-    updateName: function ( first_name, last_name,actor_id, callback) {
+
+    updateName: function (first_name, last_name, actor_id, callback) {
 
         var conn = db.getConnection();
         conn.connect(function (err) {
@@ -99,9 +289,8 @@ var userDB = {
                             console.log(err);
                             return callback(err, null);
                         } else {
-                            console.log(result);
-                            console.log(result.affectedRows);
-                            return callback(null, result.affectedRows);
+                            
+                            return callback(null, result);
                         }
                     });
                 }
@@ -113,9 +302,7 @@ var userDB = {
                             console.log(err);
                             return callback(err, null);
                         } else {
-                            console.log(result);
-                            console.log(result.affectedRows);
-                            return callback(null, result.affectedRows);
+                            return callback(null, result);
                         }
                     });
                 }
@@ -127,9 +314,7 @@ var userDB = {
                             console.log(err);
                             return callback(err, null);
                         } else {
-                            console.log(result);
-                            console.log(result.affectedRows);
-                            return callback(null, result.affectedRows);
+                            return callback(null, result);
                         }
                     });
                 }
@@ -157,8 +342,8 @@ var userDB = {
                         console.log(err)
                         return callback(err, null)
                     } else {
-                        console.log(result[0])
-                        return callback(null, result[0].affectedRows)
+                        
+                        return callback(null, result)
                     }
                 })
             }
@@ -168,7 +353,7 @@ var userDB = {
     },
 
     //Endpoint6
-    getFilmbyCategory: function (catergory_id, callback) {
+    getFilmbyCategory: function (catergory_id, price, callback) {
         var conn = db.getConnection();
 
         conn.connect(function (err) {
@@ -176,10 +361,8 @@ var userDB = {
                 console.log(err)
                 return callback(err, null)
             } else {
-                console.log("POSTMAN get film from category " + catergory_id)
-                var sql = "SELECT film.film_id, film.title, category.name AS category, film.rating, film.release_year, film.length AS duration FROM film JOIN film_category ON film_category.film_id=film.film_id JOIN category ON category.category_id=film_category.category_id WHERE category.category_id =?;"
-                
-                conn.query(sql, [catergory_id], function (err, result) {
+                var sql = "SELECT film.film_id, film.title,film.description, category.name AS category, film.rating, film.release_year FROM film JOIN film_category ON film_category.film_id=film.film_id JOIN category ON category.category_id=film_category.category_id WHERE category.category_id=? AND film.rental_rate <=?;"
+                conn.query(sql, [catergory_id, price], function (err, result) {
                     conn.end()
                     if (err) {
                         console.log(err)
@@ -220,13 +403,14 @@ var userDB = {
     //Endpoint 8 add address
 
     addCustomerAddress: function (address, callback) {
+        console.log(address)
         var conn = db.getConnection();
         conn.connect(function (err) {
             if (err) {
                 console.log(err)
                 return callback(err, null)
             } else {
-                
+
                 var sql = 'INSERT INTO address (address, address2, district, city_id, postal_code, phone) VALUES (?, ?, ?, ?, ?, ?)';
                 conn.query(sql, [address.address_line1, address.address_line2, address.district, address.city_id, address.postal_code, address.phone], function (err, result) {
                     conn.end()
@@ -259,14 +443,37 @@ var userDB = {
                         console.log(err)
                         return callback(err, null)
                     } else {
-                        console.log(result.insertId)
-                        return callback(null, result.insertId)
+                        console.log(result)
+                        return callback(null, result)
                     }
                 })
             }
         })
 
     },
+
+    deleteAddress: function (selectID, callback) {
+        var conn = db.getConnection()
+
+        conn.connect(function (err) {
+            if (err) {
+                console.log(err)
+                return callback(err, null)
+            } else {
+                var sql = 'DELETE FROM address WHERE address_id =?;'
+                conn.query(sql, [selectID], function (err, result) {
+                    conn.end()
+                    if (err) {
+                        console.log(err)
+                        return callback(err, null)
+                    } else {
+                        return callback(null, result)
+                    }
+                })
+            }
+        })
+    },
+
 
     //Endpoint 9
     addCountry: function (country, callback) {
