@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+<!-- //M.Rajkaran
+//2109039
+//DIT/FT/1B/02 -->
+<head>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+  <link href='https://fonts.googleapis.com/css?family=Roboto Mono' rel='stylesheet'>
+  <style>
+    /* Add custom CSS styles here */
+    html {
+      color: #C5C6C7;
+    }
+
+    body {
+      background-color: #2b6777;
+      font-family: 'Roboto Mono';
+      font-size: 22px;
+
+    }
+
+    h2 {
+      text-align: center;
+      margin-top: 50px;
+      font-weight: bold;
+    }
+
+
+    .search-form {
+      background-color: #52ab98;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0px 0px 10px #aaaaaa;
+      margin-top: 50px;
+    }
+
+    .print {
+      font-size: 14px;
+
+    }
+
+    .search-form label {
+      color: #333333;
+      font-weight: 500;
+    }
+
+    .search-form .form-control {
+      border-radius: 0;
+    }
+
+    #title {
+      border-radius: 8px;
+    }
+
+    #category {
+      border-radius: 8px;
+    }
+
+    #price {
+      border-radius: 8px;
+    }
+
+    .details {
+      border-color: #f2f2f2;
+      border-radius: 5px;
+      background-color: #2b6777;
+      box-shadow: 0px 0px 10px #aaaaaa;
+      padding: 2;
+    }
+
+    .details > a {
+      color: #f2f2f2;
+      text-align: center;
+    }
+
+    .search-form .btn-primary {
+      color: #2b6777;
+      background-color: #f2f2f2;
+      border-color: #1f3a93;
+    }
+
+    .search-form .btn-primary:hover {
+      background-color: #333;
+      border-color: #333;
+    }
+
+    .card {
+      margin: 20px;
+    }
+
+    .navbarlink {
+      color: white;
+    }
+
+    .navbarlink:hover {
+      color: #2b6777;
+
+    }
+
+    button {
+      background-color: #3500D3;
+      color: #C5C6C7;
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="index.html">DVD Rentz</a>
+      </div>
+      <a href="index.html" class="navbarlink" id="home">Home</a>
+      <a href="AddActor.html" id="AdAct" class="navbarlink">Actor Management</a>
+      <a href="AddCustomer.html" id="AdCust" class="navbarlink">Customer Management</a>
+      <button class="btn btn-primary" onclick="location.href='login.html'" id="login">Login</button>
+      <button class="btn btn-danger" id="logout">Logout</button>
+    </div>
+  </nav>
+
+  <div class="container">
+
+    <div class="search-form">
+      <h2>Search DVDs</h2>
+      <form>
+        <div class="form-group">
+          <label for="category">Search by category:</label>
+          <select class="form-control" id="category">
+            <option>Select Category</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="title">Search by title:</label>
+          <input type="text" class="form-control" id="title" placeholder="Enter title">
+        </div>
+        <div class="form-group">
+          <label for="maxprice">Max price:</label>
+          <input type="number" class="form-control" id="price" placeholder="Enter max price">
+        </div>
+        <button type="button" class="btn btn-primary" id="search">Search</button>
+      </form>
+    </div>
+    <div class="container">
+      <div id="movies" class="row">
+
+
+      </div>
+    </div>
+  </div>
+  </div>
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"
+    integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+
+  <script>
+    $(document).ready(function () {
+      if (localStorage.getItem('token') != null) {
+        $('#login').hide()
+        $('#AdAct').show()
+        $('#AdCust').show()
+        $('#logout').show()
+      } else {
+        $('#logout').hide()
+        $('#AdAct').hide()
+        $('#AdCust').hide()
+        $('#home').hide()
+        $('#login').show()
+      }
+
+      $.ajax({
+        url: "http://localhost:8081/film-categories",
+        type: "GET",
+        success: function (result) {
+          var options = "<option value='' selected disabled hidden>Select category</option>";
+          for (var i = 0; i < result.length; i++) {
+            options += "<option value='" + result[i].category_id + "'>" + result[i].name + "</option>";
+          }
+          $("#category").html(options);
+        }
+      });
+
+
+      $("#search").click(function () {
+        const title = $("#title").val() || null;
+        const price = $("#price").val();
+        const category = $("#category").val();
+
+        if (title == null && category == null) {
+          alert("You have to enter a Film Title OR select a category !");
+        } else if (category == null) {
+          $("#movies").empty();
+          $.ajax({
+            url: 'http://localhost:8081/searchbytitle',
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            data: {
+              title: title,
+              price: price,
+            }, success: function (result) {
+              const movies = result;
+              movies.forEach((movie) => {
+                var card = `
+                    <div class="card col-md-5" id='movie-${movie.film_id}' style="width: 15rem;">
+                      <div class="card-body">
+                        <h5 class="card-title">${movie.title}</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">${movie.category}</h6>
+                        
+                        <p class="card-text print">Release Year: <br>${movie.release_year}</p>
+                        <p class="card-text print">Rating: <br>${movie.rating}</p>
+                        <div class="container details">
+                          <a href='/MovieDetails.html?id=${movie.film_id}' class='card-link text-center'>Details</a>
+                        </div>                     
+                      </div>
+                    </div>`
+                $("#movies").append(card);
+              })
+            }
+          })
+        } else {
+          $("#movies").empty();
+          $.ajax({
+            url: 'http://localhost:8081/searchbycategory',
+            type: 'GET',
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            data: {
+              category: category,
+              price: price,
+            }, success: function (result) {
+              const movies = result;
+              movies.forEach((movie) => {
+                var card = `
+                    <div class="card col-md-5" id='movie-${movie.film_id}' style="width: 15rem;">
+                      <div class="card-body">
+                        <h5 class="card-title">${movie.title}</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">${movie.category}</h6>
+                        
+                        <p class="card-text print">Release Year: <br>${movie.release_year}</p>
+                        <p class="card-text print">Rating:<br> ${movie.rating}</p>
+                        <div class="container details">
+                          <a href='/MovieDetails.html?id=${movie.film_id}' class='card-link text-center'>Details</a>
+                        </div>
+                      </div>
+                    </div>`
+                $("#movies").append(card);
+              })
+            }
+          })
+        }
+      })
+
+
+
+      $('#logout').click(function () {
+        window.localStorage.clear();
+        window.location.assign("http://localhost:3001/index.html")
+
+      })
+
+
+    })
+  </script>
+
+
+</body>
+
+</html>

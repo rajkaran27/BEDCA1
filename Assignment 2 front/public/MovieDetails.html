@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<!-- //M.Rajkaran
+//2109039
+//DIT/FT/1B/02 -->
+<head>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+  <link href='https://fonts.googleapis.com/css?family=Roboto Mono' rel='stylesheet'>
+  <style>
+    /* Add custom CSS styles here */
+    html {
+      color: #C5C6C7;
+    }
+
+    body {
+      background-color: #2b6777;
+      font-family: 'Roboto Mono';
+      font-size: 22px;
+
+    }
+
+    h2 {
+      text-align: center;
+      margin-top: 50px;
+      font-weight: bold;
+    }
+
+    .main{
+      background-color: #f2f2f2;
+      border-radius: 10;
+      box-shadow: 0px 0px 10px #aaaaaa;
+    }
+
+    .navbarlink {
+      color: white;
+    }
+
+    .navbarlink:hover{
+      color: #2b6777;
+
+    }
+
+    button {
+      background-color: #3500D3;
+      color: #C5C6C7;
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="index.html">DVD Rentz</a>
+      </div>
+      <a href="index.html" class="navbarlink" id="home">Home</a>
+      <a href="AddActor.html" id="AdAct" class="navbarlink">Actor Management</a>
+      <a href="AddCustomer.html" id="AdCust" class="navbarlink">Customer Management</a>
+      <button class="btn btn-primary" onclick="location.href='login.html'" id="login">Login</button>
+      <button class="btn btn-danger" id="logout">Logout</button>
+    </div>
+  </nav>
+
+
+  <div class="container">
+    <div id="movie-details"></div>
+  </div>
+
+
+  <!-- add jQuery library -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    $(document).ready(function () {
+
+      if (localStorage.getItem('token') != null) {
+        $('#login').hide()
+        $('#AdAct').show()
+        $('#AdCust').show()
+        $('#logout').show()
+      } else {
+        $('#logout').hide()
+        $('#AdAct').hide()
+        $('#AdCust').hide()
+        $('#home').hide()
+        $('#login').show()
+      }
+
+      // retrieve the film_id parameter from the URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const film_id = urlParams.get("id");
+      console.log(film_id)
+      // make an AJAX call to retrieve the movie details
+      $.ajax({
+        url: "http://localhost:8081/film/" + film_id,
+        success: function (result) {
+          var details = `
+                    <div class="container py-3 text-center main mt-8">
+                <h2 class="jumbotron">${result[0].title}</h2>
+                <p class="my-3 font-italic">${result[0].category}</p>
+                <p class="mb-5 ">${result[0].description}</p>
+                <div class="d-flex justify-content-between">
+                  <p class=" mr-3">Release Year: ${result[0].release_year}</p>
+                  <p class=" ml-3">Rating: ${result[0].rating}</p>
+                </div>
+                <h3 class="my-3 ">Actors</h3>
+                <ul id="actors" class="list-unstyled"></ul>
+              </div>
+                            `;
+          $("#movie-details").append(details);
+
+          // make another AJAX call to retrieve the actors
+          $.ajax({
+            url: "http://localhost:8081/filmactors/" + result[0].film_id,
+            success: function (result) {
+              console.log(result)
+              for (var i = 0; i < result.length; i++) {
+                var actor = result[i]
+                var section =
+                  `<li>${actor.first_name} ${actor.last_name}</li>`
+                $("#actors").append(section)
+              }
+            }
+          });
+        },
+      });
+
+
+      $('#logout').click(function () {
+        window.localStorage.clear();
+        window.location.assign("http://localhost:3001/index.html")
+
+      })
+    });
+  </script>
+</body>
+
+</html>

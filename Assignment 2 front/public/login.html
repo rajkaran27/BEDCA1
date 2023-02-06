@@ -1,0 +1,134 @@
+﻿<!DOCTYPE html>
+<!-- //M.Rajkaran
+//2109039
+//DIT/FT/1B/02 -->
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link href="css/login.css" rel="stylesheet" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link href='https://fonts.googleapis.com/css?family=Roboto Mono' rel='stylesheet'>
+    <style>
+        /* Add custom CSS styles here */
+        html {
+          color: #C5C6C7;
+        }
+    
+        body {
+          background-color: #2b6777;
+          font-family: 'Roboto Mono';
+          font-size: 22px;
+    
+        }
+    
+        h2 {
+          text-align: center;
+          margin-top: 50px;
+          font-weight: bold;
+        }
+    
+        .card {
+          margin: 20px;
+        }
+    
+        .navbarlink {
+          color: white;
+        }
+    
+        button {
+          background-color: #3500D3;
+          color: #C5C6C7;
+        }
+      </style>
+
+    <style>
+        .login-form {
+            width: 340px;
+            margin: 50px auto;
+        }
+
+        .login-form form {
+            margin-bottom: 15px;
+            background: #f7f7f7;
+            box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+        }
+
+        .login-form h2 {
+            margin: 0 0 15px;
+        }
+
+        .form-control,
+        .btn {
+            min-height: 38px;
+            border-radius: 2px;
+        }
+
+        .btn {
+            font-size: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <script>
+        $(document).ready(function () {
+            $("#Login").click(function () {
+                var id = $('#email').val();
+                var pwd = $('#pwd').val();
+                var data = JSON.stringify({ email: id, password: pwd });
+
+                $.ajax({
+                    url: 'http://localhost:8081/login',
+                    type: 'POST',
+                    data: data,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (data, textStatus, xhr) {
+                        if (data != null) {
+                            localStorage.setItem('token', data.token);
+                            localStorage.setItem('userInfo', data.UserData);
+                            window.location.assign("http://localhost:3001/index.html");
+                        } else {
+                            alert("Wrong username or password")
+                            console.log("Error");
+                        }
+                    },
+                    error: function (xhr, textStatus, errorThrown) {
+                        alert("Wrong username or password")
+                        console.log('Error in Operation');
+                    }
+                });
+                return false;
+            });
+        });  
+    </script>
+
+    
+
+    <div class="login-form">
+        <!--<form action="http://localhost:3001/profile.html"> -->
+        <form action="">
+            <h2 class="text-center">Log in</h2>
+            <div class="form-group">
+                <input type="text" class="form-control" id="email" placeholder="E-mail" required="required">
+            </div>
+            <div class="form-group">
+                <input type="password" class="form-control" id="pwd" placeholder="Password" required="required">
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary btn-block" id="Login" href="index.html">Log in</button>
+            </div>
+            <div class="clearfix">
+                <a href="index.html" class="pull-right">Login as guest</a>
+            </div>
+        </form>
+    </div>
+</body>
+
+</html>

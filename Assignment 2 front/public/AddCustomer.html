@@ -1,0 +1,228 @@
+<!-- //M.Rajkaran
+//2109039
+//DIT/FT/1B/02 -->
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
+        integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <link href='https://fonts.googleapis.com/css?family=Roboto Mono' rel='stylesheet'>
+    <title>Customer Management</title>
+    <style>
+        /* Add custom CSS styles here */
+        html {
+            color: #C5C6C7;
+        }
+
+        body {
+            background-color: #2b6777;
+            font-family: 'Roboto Mono';
+            font-size: 22px;
+            color: #C5C6C7;
+        }
+
+        h2 {
+            text-align: center;
+            margin-top: 50px;
+            font-weight: bold;
+
+        }
+
+        .navbarlink {
+            color: white;
+        }
+
+        .navbarlink:hover {
+            color: #2b6777;
+
+        }
+
+        button {
+            background-color: #2b6777;
+            color: #C5C6C7;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="index.html">DVD Rentz</a>
+            </div>
+            <a href="index.html" class="navbarlink" id="home">Home</a>
+            <a href="AddActor.html" id="AdAct" class="navbarlink">Actor Management</a>
+            <a href="AddCustomer.html" id="AdCust" class="navbarlink">Customer Management</a>
+            <button class="btn btn-primary" onclick="location.href='login.html'" id="login">Login</button>
+            <button class="btn btn-danger" id="logout">Logout</button>
+        </div>
+    </nav>
+    <div class="container m-10">
+        <h2 class="text-center mb-5 ">Add Customer</h2>
+        <form>
+            <div class="form-group">
+                <label for="storeId">Store ID</label>
+                <select class="form-control" id="storeId">
+                </select>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="firstName">First Name</label>
+                    <input type="text" class="form-control" id="first_name">
+                </div>
+                <div class="form-group col-md-6 ">
+                    <label for="lastName">Last Name</label>
+                    <input type="text" class="form-control" id="last_name">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" class="form-control" id="email">
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="address_line1">Address Line 1</label>
+                    <input type="text" class="form-control" id="address_line1">
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="address_line2">Address Line 2 (Optional)</label>
+                    <input type="text" class="form-control" id="address_line2">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="district">District</label>
+                <input type="text" class="form-control" id="district">
+            </div>
+            <div class="form-group">
+                <label for="city_id">City ID</label>
+                <select class="form-control" id="city_id">
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="postal_code">Postal Code</label>
+                <input type="text" class="form-control" id="postal_code">
+            </div>
+            <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" class="form-control" id="phone">
+            </div>
+            <button type="button" class="btn btn-primary float-right mb-10" id="submit">Submit</button>
+        </form>
+    </div>
+    <script>
+        $(document).ready(function () {
+
+            if (localStorage.getItem('token') != null) {
+                $('#login').hide()
+                $('#AdAct').show()
+                $('#AdCust').show()
+                $('#logout').show()
+            } else {
+                $('#logout').hide()
+                $('#AdAct').hide()
+                $('#home').hide()
+                $('#AdCust').hide()
+                $('#login').show()
+            }
+
+            $.ajax({
+                url: "http://localhost:8081/store",
+                type: "GET",
+                success: function (result) {
+                    var options = ""
+                    for (var i = 0; i < result.length; i++) {
+                        options += "<option value='" + result[i].store_id + "'>" + result[i].address + "</option>";
+                    }
+                    $("#storeId").html(options);
+                }
+
+
+            })
+
+
+            $.ajax({
+                url: "http://localhost:8081/city",
+                type: "GET",
+                success: function (result) {
+                    var options = ""
+                    for (var i = 0; i < result.length; i++) {
+                        options += "<option value='" + result[i].city_id + "'>" + result[i].city + "</option>";
+                    }
+                    $("#city_id").html(options);
+                }
+            })
+
+
+            $('#submit').click(function () {
+                const first_name = $("#first_name").val();
+                const last_name = $("#last_name").val();
+                const email = $("#email").val()
+                const store_id = $("#storeId").val()
+                const address_line1 = $("#address_line1").val()
+                const address_line2 = $("#address_line2").val()
+                const district = $("#district").val()
+                const city_id = $("#city_id").val()
+                const postal_code = $("#postal_code").val()
+                const phone = $("#phone").val()
+
+                var tmpToken = localStorage.getItem('token');
+
+                var data = {
+                    "store_id": store_id,
+                    "first_name": first_name,
+                    "last_name": last_name,
+                    "email": email,
+                    "address": {
+                        "address_line1": address_line1,
+                        "address_line2": address_line2,
+                        "district": district,
+                        "city_id": city_id,
+                        "postal_code": postal_code,
+                        "phone": phone
+                    }
+                }
+                $.ajax({
+                    headers: { 'authorization': 'Bearer ' + tmpToken },
+                    url: 'http://localhost:8081/customers',
+                    type: 'POST',
+                    data: JSON.stringify(data),
+                    contentType: "application/json; charset=utf-8",
+                    success: function (msg) {
+                        alert(msg.Message)
+                    },
+                    error: function (xhr, textStatus, msg) {
+                        console.log(xhr)
+                        alert("Please fill in the fields")
+                    }
+                })
+
+            })
+
+
+            $('#logout').click(function () {
+                window.localStorage.clear();
+                window.location.assign("http://localhost:3001/index.html")
+
+            })
+
+        })
+
+
+    </script>
+
+
+
+
+
+
+
+
+</body>
+
+</html>

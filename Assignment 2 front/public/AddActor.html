@@ -1,0 +1,228 @@
+<!-- //M.Rajkaran
+//2109039
+//DIT/FT/1B/02 -->
+
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+  <link href='https://fonts.googleapis.com/css?family=Roboto Mono' rel='stylesheet'>
+  <style>
+    /* Add custom CSS styles here */
+    html {
+      color: #C5C6C7;
+    }
+
+    body {
+      background-color: #2b6777;
+      font-family: 'Roboto Mono';
+      font-size: 22px;
+
+    }
+
+    h2 {
+      text-align: center;
+      margin-top: 50px;
+      font-weight: bold;
+    }
+
+    .navbarlink {
+      color: white;
+    }
+
+    .navbarlink:hover {
+      color: #2b6777;
+
+    }
+
+    button {
+      background-color: #3500D3;
+      color: #C5C6C7;
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="index.html">DVD Rentz</a>
+      </div>
+      <a href="index.html" class="navbarlink" id="home">Home</a>
+      <a href="AddActor.html" id="AdAct" class="navbarlink">Actor Management</a>
+      <a href="AddCustomer.html" id="AdCust" class="navbarlink">Customer Management</a>
+      <button class="btn btn-primary" onclick="location.href='login.html'" id="login">Login</button>
+      <button class="btn btn-danger" id="logout">Logout</button>
+    </div>
+  </nav>
+  <div class="container text-white">
+
+    <form>
+      <h2>Add New Actor</h2>
+      <div class="form-group">
+        <label for="firstname">First Name:</label>
+        <input type="text" class="form-control" id="firstname" placeholder="Enter first name">
+      </div>
+      <div class="form-group">
+        <label for="lastname">Last Name:</label>
+        <input type="text" class="form-control" id="lastname" placeholder="Enter last name">
+      </div>
+      <button type="button" class="btn btn-primary" id="add">Add</button>
+    </form>
+
+    <div class="container text-white">
+      <form>
+        <h2>Update Actor Details</h2>
+        <div class="form-group">
+          <label for="first_name">Actor ID</label>
+          <input type="number" class="form-control" id="actor_id" placeholder="Enter Actor ID">
+        </div>
+
+        <div class="form-group">
+          <label for="first_name">First Name:</label>
+          <input type="text" class="form-control" id="first_name" placeholder="Enter first name">
+        </div>
+
+        <div class="form-group">
+          <label for="first_name">Last Name:</label>
+          <input type="text" class="form-control" id="last_name" placeholder="Enter last name">
+        </div>
+        <button type="button" class="btn btn-primary" id="update">Update</button>
+      </form>
+
+      <form>
+        <h2>Delete Actor</h2>
+        <div class="form-group">
+          <label for="deleteAct">Actor ID</label>
+          <select class="form-control" id="deleteAct">
+
+          </select>
+        </div>
+        <button type="button" class="btn btn-primary" id="delete">Delete</button>
+      </form>
+
+    </div>
+  </div>
+
+  <script>
+    $(document).ready(function () {
+
+      if (localStorage.getItem('token') != null) {
+        $('#login').hide()
+        $('#AdAct').show()
+        $('#AdCust').show()
+        $('#logout').show()
+      } else {
+        $('#logout').hide()
+        $('#AdAct').hide()
+        $('#AdCust').hide()
+        $('#home').hide()
+        $('#login').show()
+      }
+
+
+      $.ajax({
+        url: "http://localhost:8081/actorSelect",
+        type: "GET",
+        success: function (result) {
+          var options = "<option value='' selected disabled hidden>Select Actors</option>";
+          for (var i = 0; i < result.length; i++) {
+            options += "<option value='" + result[i].actor_id + "'>" + result[i].first_name + " " + result[i].last_name + "</option>";
+          }
+          $("#deleteAct").html(options);
+        }
+      })
+
+      $("#add").click(function () {
+        var first_name = $("#firstname").val();
+        var last_name = $("#lastname").val();
+        var tmpToken = localStorage.getItem('token');
+
+        $.ajax({
+          headers: { 'authorization': 'Bearer ' + tmpToken },
+          url: 'http://localhost:8081/actors',
+          type: 'POST',
+          data: JSON.stringify({
+            first_name: first_name,
+            last_name: last_name
+          }),
+          contentType: "application/json; charset=utf-8",
+          dataType: "json",
+          success: function (result) {
+            console.log(result)
+            alert("Actor Added!\nActor ID: " + result.insertId)
+          },
+          error: function () {
+            alert("Please enter required fields")
+            console.log('Error in Operation');
+          }
+        })
+      })
+
+      $("#update").click(function () {
+        const first_name = $("#first_name").val();
+        const last_name = $("#last_name").val();
+        const actor_id = $("#actor_id").val();
+
+        var tmpToken = localStorage.getItem('token');
+
+
+        $.ajax({
+          headers: { 'authorization': 'Bearer ' + tmpToken },
+          url: 'http://localhost:8081/updateActor',
+          type: 'PUT',
+          data: JSON.stringify({
+            actor_id: actor_id,
+            first_name: first_name,
+            last_name: last_name
+          }),
+          contentType: "application/json; charset=utf-8",
+          dataType: "json",
+          success: function () {
+            alert("Actor details updated!")
+          }, error: function (msg) {
+            alert("Please fill in the details!")
+          }
+        })
+
+
+      })
+
+
+
+      $("#delete").click(function () {
+        const actor_id = $("#deleteAct").val()
+        console.log(actor_id)
+        var tmpToken = localStorage.getItem('token');
+        $.ajax({
+          headers: { 'authorization': 'Bearer ' + tmpToken },
+          url: 'http://localhost:8081/deleteActor',
+          type: 'DELETE',
+          data: JSON.stringify({
+            actor_id: actor_id
+          }),
+          contentType: "application/json; charset=utf-8",
+          dataType: "json",
+          success: function (succ) {
+            alert("Actor Deleted!")
+          }
+        })
+      })
+
+
+      $('#logout').click(function () {
+        window.localStorage.clear();
+        window.location.assign("http://localhost:3001/index.html")
+
+      })
+
+
+    })
+  </script>
+
+</body>
+
+</html>
